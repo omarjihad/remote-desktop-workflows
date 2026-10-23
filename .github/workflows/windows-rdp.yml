@@ -24,24 +24,21 @@ jobs:
           Write-Host "✅ Password Configured!"
 
       - name: Start Cloudflare Tunnel
-        run: |
-          Write-Host "============================================"
-          Write-Host "🚀 WINDOWS RDP - CLOUDFLARE TUNNEL"
-          Write-Host "============================================"
-          Write-Host ""
-          Start-Process PowerShell -ArgumentList '-NoExit -Command "cloudflared tunnel --url tcp://localhost:3389"'
-          Start-Sleep -Seconds 15
-          Write-Host ""
-          Write-Host "✅ TUNNEL STARTED! Check separate PowerShell window for URL"
-          Write-Host ""
-          Write-Host "📋 CONNECTION DETAILS:"
-          Write-Host "   USERNAME: runneradmin"
-          Write-Host "   PASSWORD: P@ssw0rd123!"
-          Write-Host "   OS: Windows Server 2022"
-          Write-Host "   CPU: 4 cores"
-          Write-Host "   RAM: 16GB"
-          Write-Host "============================================"
-
+  shell: powershell
+  run: |
+    $log = "$env:TEMP\cf.log"
+    Start-Process -FilePath "cloudflared" -ArgumentList "tunnel --url tcp://localhost:3389 --logfile `"$log`"" -NoNewWindow
+    Start-Sleep -Seconds 15
+    Write-Host "🔍 Extracting URL from logs..."
+    $url = Select-String -Path $log -Pattern "https://[a-zA-Z0-9-]+\.trycloudflare\.com" | Select-Object -First 1
+    if ($url) {
+        Write-Host "✅ RDP URL FOUND:"
+        Write-Host "👉 $($url.Matches[0].Value)"
+    } else {
+        Write-Host "❌ URL not found in log. Full log:"
+        Get-Content $log
+    }
+    
       - name: Keep Session Alive
         run: |
           Write-Host "⏳ Session Active - Keeping alive..."
