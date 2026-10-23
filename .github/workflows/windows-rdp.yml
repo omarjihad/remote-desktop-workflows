@@ -24,6 +24,14 @@ jobs:
           Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd123!" -Force)
           Write-Host "Password Configured!"
 
+      - name: Warmup Windows Profile
+        shell: powershell
+        run: |
+          Write-Host "Pre-loading Windows profile to prevent RDP timeouts..."
+          Start-Process explorer.exe
+          Start-Sleep -Seconds 40
+          Write-Host "Warmup complete!"
+
       - name: Start Cloudflare Tunnel
         shell: powershell
         run: |
