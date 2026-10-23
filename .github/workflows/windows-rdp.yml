@@ -17,12 +17,12 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-          Write-Host "✅ RDP Enabled Successfully!"
+          Write-Host "RDP Enabled Successfully!"
 
       - name: Set Administrator Password
         run: |
           Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd123!" -Force)
-          Write-Host "✅ Password Configured!"
+          Write-Host "Password Configured!"
 
       - name: Start Cloudflare Tunnel
         shell: powershell
@@ -30,20 +30,20 @@ jobs:
           $log = "$env:TEMP\cf.log"
           Start-Process -FilePath "cloudflared" -ArgumentList "tunnel --url tcp://localhost:3389 --logfile `"$log`"" -NoNewWindow
           Start-Sleep -Seconds 15
-          Write-Host "🔍 Extracting URL from logs..."
+          Write-Host "Extracting URL from logs..."
           $url = Select-String -Path $log -Pattern "https://[a-zA-Z0-9-]+\.trycloudflare\.com" | Select-Object -First 1
           if ($url) {
-              Write-Host "✅ RDP URL FOUND:"
-              Write-Host "👉 $($url.Matches[0].Value)"
+              Write-Host "RDP URL FOUND:"
+              Write-Host $url.Matches[0].Value
           } else {
-              Write-Host "❌ URL not found in log. Full log:"
+              Write-Host "URL not found in log. Full log:"
               Get-Content $log
           }
 
       - name: Keep Session Alive
         run: |
-          Write-Host "⏳ Session Active - Keeping alive..."
+          Write-Host "Session Active - Keeping alive..."
           while ($true) {
             Start-Sleep -Seconds 60
-            Write-Host "✓ Active - $(Get-Date -Format 'HH:mm:ss')"
+            Write-Host "Active"
           }
